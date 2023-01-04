@@ -53,9 +53,9 @@ public class Nameserver implements INameserver {
                 UnicastRemoteObject.exportObject(nameserverRemote, 0);
                 rootNameserverRemote.registerNameserver(domain, nameserverRemote);
             }
-        } catch (RemoteException | AlreadyBoundException | NotBoundException | InvalidDomainException e) {
+        } catch (RemoteException | AlreadyBoundException | NotBoundException e) {
             shell.out().println("Couldn't create Remotes: " + e.getMessage());
-        } catch (AlreadyRegisteredException e) {
+        } catch (AlreadyRegisteredException | InvalidDomainException e) {
             shell.out().println("Error: " + e.getMessage());
         }
 
