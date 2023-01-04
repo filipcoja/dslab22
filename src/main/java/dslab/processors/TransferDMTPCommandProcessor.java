@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
@@ -39,11 +38,11 @@ public class TransferDMTPCommandProcessor extends DMTPCommandProcessor {
             return;
         }
 
-        // check if recipients are emails and exist
+        // check if recipients are emails
         String[] recipients = commandParts[1].split(",");
         for (String recipient : recipients) {
             if (!emailRegex.matcher(recipient).matches()) {
-                send("error one of the recpients is not an email adress");
+                send("error one of the recipients is not an email address");
                 return;
             }
         }

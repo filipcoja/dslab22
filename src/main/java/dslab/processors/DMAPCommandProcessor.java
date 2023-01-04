@@ -136,7 +136,7 @@ public class DMAPCommandProcessor extends CommandProcessor {
             loggedIn = false;
             sendOk();
         } else {
-            send("error cant logout if noone is logged in");
+            send("error cant logout if no one is logged in");
         }
     }
 }

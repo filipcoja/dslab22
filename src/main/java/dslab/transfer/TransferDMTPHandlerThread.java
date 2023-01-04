@@ -6,7 +6,6 @@ import dslab.processors.CommandProcessor;
 import dslab.processors.TransferDMTPCommandProcessor;
 import dslab.util.Config;
 
-import javax.xml.crypto.Data;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -17,7 +16,7 @@ import java.util.function.Consumer;
 /**
  * Thread for listening incoming requests from User
  */
-public class TransferDMAPHandlerThread extends HandlerThread {
+public class TransferDMTPHandlerThread extends HandlerThread {
     private final BlockingQueue<Mail> queue;
     private DatagramSocket udpSocket;
     private final int dmtpPort;
@@ -25,7 +24,7 @@ public class TransferDMAPHandlerThread extends HandlerThread {
     private InetAddress monitorAddress;
     private final int monitorPort;
 
-    public TransferDMAPHandlerThread(Socket socket, BlockingQueue<Mail> queue, Config config, Consumer<HandlerThread> callback) {
+    public TransferDMTPHandlerThread(Socket socket, BlockingQueue<Mail> queue, Config config, Consumer<HandlerThread> callback) {
         super(socket, callback);
         dmtpPort = config.getInt("tcp.port");
         try {

@@ -1,9 +1,5 @@
 package dslab.model;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
-
 public class Host {
     public String ip;
     public int port;

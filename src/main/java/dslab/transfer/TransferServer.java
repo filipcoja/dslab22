@@ -45,7 +45,7 @@ public class TransferServer implements ITransferServer, Runnable {
             domainMapping.put(domain, new Host(ipSplit[0], Integer.parseInt(ipSplit[1])));
         }
 
-        // Start new dmap and dmtp thraed for handling incoming requests from clients and transfer servers
+        // Start new dmap and dmtp thread for handling incoming requests from clients and transfer servers
         try {
             ServerSocket dmtpSocket = new ServerSocket(config.getInt("tcp.port"));
             shell.out().println("Started ServerSockets");

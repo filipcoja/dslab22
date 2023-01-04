@@ -25,6 +25,6 @@ public class TransferDMTPListenerThread extends ListenerThread {
 
     @Override
     protected HandlerThread getHandlerThread(Socket socket) {
-        return new TransferDMAPHandlerThread(socket, queue, config, threads::remove);
+        return new TransferDMTPHandlerThread(socket, queue, config, threads::remove);
     }
 }

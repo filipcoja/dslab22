@@ -28,7 +28,7 @@ public class MailboxDMTPCommandProcessor extends DMTPCommandProcessor {
         String[] recipients = commandParts[1].split(",");
         for (String recipient : recipients) {
             if (!emailRegex.matcher(recipient).matches()) {
-                send("error one of the recpients is not an email adress");
+                send("error one of the recipients is not an email address");
                 return;
             }
 
