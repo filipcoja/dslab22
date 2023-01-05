@@ -2,11 +2,18 @@ package dslab.transfer;
 
 import dslab.model.Host;
 import dslab.model.Mail;
+import dslab.nameserver.INameserverRemote;
 import dslab.util.ValidationException;
 
-import java.io.*;
-import java.net.*;
-import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -14,12 +21,12 @@ import java.util.concurrent.BlockingQueue;
 public class TransferMailSenderThread extends Thread {
 
     private final BlockingQueue<Mail> queue;
-    private final HashMap<String, Host> domainMapping;
+    private final INameserverRemote rootNameserverRemote;
     private boolean finished = false;
 
-    public TransferMailSenderThread(BlockingQueue<Mail> queue, HashMap<String, Host> domainMapping) {
+    public TransferMailSenderThread(BlockingQueue<Mail> queue, INameserverRemote rootNameserverRemote) {
         this.queue = queue;
-        this.domainMapping = domainMapping;
+        this.rootNameserverRemote = rootNameserverRemote;
     }
 
     @Override
@@ -45,11 +52,11 @@ public class TransferMailSenderThread extends Thread {
 
     public void sendMessage(String server, Mail mail) {
         Mail errorMail = null;
-        if (!domainMapping.containsKey(server)) {
+        var host = lookupMailboxServerAddress(server);
+        if (host == null) {
             sendErrorMail(generateErrorEmail(mail, "error unknown host"), mail);
             return;
         }
-        var host = domainMapping.get(server);
         try (Socket socket = new Socket(host.ip, host.port)) {
             BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter serverWriter = new PrintWriter(socket.getOutputStream());
@@ -105,9 +112,9 @@ public class TransferMailSenderThread extends Thread {
 
     private void sendErrorMail(Mail errorMail, Mail originalMail) {
         String domain = originalMail.getFrom().split("@")[1];
-        if (!domainMapping.containsKey(domain)) return;
+        Host host = lookupMailboxServerAddress(domain);
+        if (host == null) return;
 
-        Host host = domainMapping.get(domain);
         try (Socket socket = new Socket(host.ip, host.port)) {
             BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter serverWriter = new PrintWriter(socket.getOutputStream());
@@ -123,6 +130,25 @@ public class TransferMailSenderThread extends Thread {
             handleCommand("quit", "ok", serverReader, serverWriter);
         } catch (Exception e) {
             // discard
+        }
+    }
+
+    private Host lookupMailboxServerAddress(String domain) {
+        String[] subdomains = domain.split("\\.");
+        INameserverRemote currentNameserver = rootNameserverRemote;
+        try {
+            int pos = subdomains.length - 1;
+            while (pos > 0) {
+                currentNameserver = currentNameserver.getNameserver(subdomains[pos]);
+                if (currentNameserver == null) {
+                    return null;
+                }
+                pos--;
+            }
+            String address = currentNameserver.lookup(subdomains[0]);
+            return address != null ? Host.fromString(address) : null;
+        } catch (RemoteException e) {
+            return null;
         }
     }
 }

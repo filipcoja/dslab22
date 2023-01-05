@@ -64,7 +64,8 @@ public class NameserverRemote implements INameserverRemote {
 
     @Override
     public String lookup(String domain) throws RemoteException {
-        return null;
+        logMessage("Address for '" + domain + "' looked up by a TransferServer");
+        return this.managedServers.get(domain);
     }
 
     public String[] getSubZones() {
