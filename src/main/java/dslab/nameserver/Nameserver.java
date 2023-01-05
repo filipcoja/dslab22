@@ -78,7 +78,10 @@ public class Nameserver implements INameserver {
     @Override
     @Command
     public void addresses() {
-        // TODO
+        String[] addresses = nameserverRemote.getMangedServers();
+        for (int i = 0; i < addresses.length; i++) {
+            shell.out().println((i + 1) + ". " + addresses[i]);
+        }
     }
 
     @Override

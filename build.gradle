@@ -37,7 +37,6 @@ def dslabRunTasks = [
     // assignment 2
     [name: 'run-ns-root', main: 'dslab.nameserver.Nameserver', args: 'ns-root', description: 'Run root nameserver'],
     [name: 'run-ns-ze', main: 'dslab.nameserver.Nameserver', args: 'ns-ze', description: 'Run .ze nameserver'],
-    [name: 'run-ns-univer-ze', main: 'dslab.nameserver.Nameserver', args: 'ns-univer-ze', description: 'Run .univer.ze nameserver'],
     [name: 'run-ns-planet', main: 'dslab.nameserver.Nameserver', args: 'ns-planet', description: 'Run .planet nameserver'],
     [name: 'run-ns-earth-planet', main: 'dslab.nameserver.Nameserver', args: 'ns-earth-planet', description: 'Run .earth.planet nameserver'],
     [name: 'run-client-trillian', main: 'dslab.client.MessageClient', args: 'client-trillian', description: 'Run client for trillian'],
