@@ -16,7 +16,7 @@ public abstract class DMTPCommandProcessor extends CommandProcessor {
 
     @Override
     public void sendInit() {
-        send("ok DMTP");
+        send("ok DMTP2.0");
     }
 
     @Override

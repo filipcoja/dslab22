@@ -24,7 +24,7 @@ public class DMAPCommandProcessor extends CommandProcessor {
 
     @Override
     public void sendInit() {
-        send("ok DMAP");
+        send("ok DMAP2.0");
     }
 
     @Override
