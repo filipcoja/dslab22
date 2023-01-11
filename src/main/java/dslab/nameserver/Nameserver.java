@@ -91,6 +91,7 @@ public class Nameserver implements INameserver {
             UnicastRemoteObject.unexportObject(nameserverRemote, true);
             if (isRootNameserver) {
                 rootRegistry.unbind(rootId);
+                UnicastRemoteObject.unexportObject(rootRegistry, true);
             }
         } catch (RemoteException | NotBoundException e) {
             shell.out().println("Error while closing Remotes!");
