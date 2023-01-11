@@ -3,21 +3,9 @@ package dslab.processors;
 import dslab.mailbox.MailboxServerDatabase;
 import dslab.model.HandshakeStatus;
 import dslab.model.Mail;
-import dslab.util.Integrity;
-import dslab.util.Keys;
+import dslab.util.AESUtil;
+import dslab.util.IntegrityUtil;
 import dslab.util.PrivateKeyUtil;
-import dslab.util.PublicKeyUtil;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import java.io.File;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.util.Objects;
 
 public class DMAPCommandProcessor extends CommandProcessor {
     private final MailboxServerDatabase mailboxServerDatabase;
@@ -27,7 +15,8 @@ public class DMAPCommandProcessor extends CommandProcessor {
     private String usernameLoggedIn = "";
 
     private final PrivateKeyUtil privateKeyUtil;
-    private final Integrity integrity = new Integrity();
+    private AESUtil aesUtil;
+    private final IntegrityUtil integrity = new IntegrityUtil();
 
     public DMAPCommandProcessor(MailboxServerDatabase mailboxServerDatabase) {
         super();
@@ -43,14 +32,17 @@ public class DMAPCommandProcessor extends CommandProcessor {
     @Override
     public boolean handleType(String type, String[] commandParts) {
         if (handshakeStatus == HandshakeStatus.AWAITING_CHALLENGE) {
-            return handleHandshakeAwaitingOk(commandParts);
+            String payload = privateKeyUtil.decryptBase64(commandParts[0]);
+            commandParts = payload.split(" ");
+            return !commandParts[0].equals("ok") || handleHandshakeAwaitingOk(commandParts);
         } else if (handshakeStatus == HandshakeStatus.AWAITING_OK) {
-            // aes decryption as of here
-            if (!type.equals("ok")) return true;
+            commandParts = aesUtil.decryptBase64(commandParts[0]).split(" ");
+            if (!commandParts[0].equals("ok")) return true;
             handshakeStatus = HandshakeStatus.FINISHED;
         } else {
             if (handshakeStatus == HandshakeStatus.FINISHED) {
-                // aes decryption as of here
+                commandParts = aesUtil.decryptBase64(commandParts[0]).split(" ");
+                type = commandParts[0];
             }
             switch (type) {
                 case "login":
@@ -84,23 +76,14 @@ public class DMAPCommandProcessor extends CommandProcessor {
     }
 
     private boolean handleHandshakeAwaitingOk(String[] commandParts) {
-        if (commandParts.length != 2) {
+        if (commandParts.length != 4) {
             return true;
         }
-        String otherParts = privateKeyUtil.decryptBase64(commandParts[1]);
-//        otherParts = otherParts.split(" ");
-
-
         String clientChallenge = commandParts[1];
         String secretKey = commandParts[2];
         String iv = commandParts[3];
-
-
-
-        // passt alles
-
-        String AESdecryptedClientChallenge = "";
-        send("ok " + AESdecryptedClientChallenge); // client challenge hier decrypted angeben
+        aesUtil = new AESUtil(secretKey, iv);
+        send(aesUtil.encryptBase64("ok " + clientChallenge)); // client challenge hier decrypted angeben
         return false;
     }
 

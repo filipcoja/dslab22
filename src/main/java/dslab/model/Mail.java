@@ -1,5 +1,7 @@
 package dslab.model;
 
+import dslab.util.IntegrityUtil;
+
 import java.util.Set;
 
 public class Mail {
@@ -7,6 +9,9 @@ public class Mail {
     private Set<String> to;
     private String subject;
     private String data;
+    private String hash;
+    private final IntegrityUtil integrityUtil = new IntegrityUtil();
+
 
     public String getFrom() {
         return from;
@@ -40,6 +45,11 @@ public class Mail {
         this.data = data;
     }
 
+    public void setHash() {
+        if (from == null || from.isBlank() || subject == null || subject.isBlank() || data == null || data.isBlank() || to == null || to.isEmpty()) return;
+        hash = integrityUtil.calculateHash(toString());
+    }
+
     public void reset() {
         from = subject = data = null;
         to = null;
@@ -58,13 +68,12 @@ public class Mail {
         return MailStatus.OK;
     }
 
+    public String getHash() {
+        return hash;
+    }
+
     @Override
     public String toString() {
-        return "Mail{" +
-                "from='" + from + '\'' +
-                ", to=" + to +
-                ", subject='" + subject + '\'' +
-                ", data='" + data + '\'' +
-                '}';
+        return getFrom() + "\n" + String.join(",", getTo()) + "\n" + getSubject() + "\n" + getData();
     }
 }
