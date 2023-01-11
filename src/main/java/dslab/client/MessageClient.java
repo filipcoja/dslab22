@@ -2,9 +2,15 @@ package dslab.client;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import dslab.ComponentFactory;
 import dslab.util.Config;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 public class MessageClient implements IMessageClient, Runnable {
 
@@ -42,6 +48,23 @@ public class MessageClient implements IMessageClient, Runnable {
 
     @Override
     public void msg(String to, String subject, String data) {
+        KeyGenerator keyGenerator = null;
+        try {
+            keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(256);
+            SecretKey key = keyGenerator.generateKey();
+            String secret = Base64.getEncoder().encodeToString(key.getEncoded());
+
+
+            byte[] ivB = new byte[16];
+            SecureRandom secureRandom = new SecureRandom();
+            secureRandom.nextBytes(ivB);
+            String iv = Base64.getEncoder().encodeToString(ivB);
+        } catch (NoSuchAlgorithmException e) {
+            // idk error
+        }
+
+
 
     }
 

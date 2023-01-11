@@ -13,6 +13,7 @@ import at.ac.tuwien.dsg.orvell.Shell;
 import at.ac.tuwien.dsg.orvell.StopShellException;
 import at.ac.tuwien.dsg.orvell.annotation.Command;
 import dslab.ComponentFactory;
+import dslab.model.HandshakeStatus;
 import dslab.nameserver.AlreadyRegisteredException;
 import dslab.nameserver.INameserverRemote;
 import dslab.nameserver.InvalidDomainException;
@@ -20,7 +21,6 @@ import dslab.util.Config;
 
 public class MailboxServer implements IMailboxServer, Runnable {
     private final Shell shell;
-
     private MailboxDMAPListenerThread mailboxDmapListenerThread;
     private MailboxDMTPListenerThread mailboxDmtpListenerThread;
 
@@ -38,7 +38,7 @@ public class MailboxServer implements IMailboxServer, Runnable {
         shell.setPrompt(componentId + "> ");
 
         shell.out().println("Started Init Process");
-        var mailboxServerDatabase = new MailboxServerDatabase(config);
+        var mailboxServerDatabase = new MailboxServerDatabase(config, componentId);
 
 
         // Start new dmap and dmtp thraed for handling incoming requests from clients and transfer servers

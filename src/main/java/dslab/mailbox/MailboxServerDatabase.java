@@ -11,8 +11,10 @@ public class MailboxServerDatabase {
     // user => {id => Mail, id2 => Mail}
     private final HashMap<String, UserData> users;
     public final String domain;
+    public final String componentId;
 
-    public MailboxServerDatabase(Config config) {
+    public MailboxServerDatabase(Config config, String componentId) {
+        this.componentId = componentId;
         var userConf = new Config(config.getString("users.config"));
         users = new HashMap<>();
         // Create entry for every user
