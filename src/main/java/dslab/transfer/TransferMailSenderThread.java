@@ -62,7 +62,7 @@ public class TransferMailSenderThread extends Thread {
             PrintWriter serverWriter = new PrintWriter(socket.getOutputStream());
 
             String input = serverReader.readLine();
-            if (!input.equals("ok DMTP")) throw new ValidationException("error protocol error");
+            if (!input.equals("ok DMTP2.0")) throw new ValidationException("error protocol error");
             handleCommand("begin", "ok", serverReader, serverWriter);
             handleCommand("to " + String.join(",", mail.getTo()), "ok " + mail.getTo().size(), serverReader, serverWriter);
             handleCommand("subject " + mail.getSubject(), "ok", serverReader, serverWriter);
@@ -123,7 +123,7 @@ public class TransferMailSenderThread extends Thread {
             PrintWriter serverWriter = new PrintWriter(socket.getOutputStream());
 
             String input = serverReader.readLine();
-            if (!input.equals("ok DMTP")) throw new ValidationException("error protocol error");
+            if (!input.equals("ok DMTP2.0")) throw new ValidationException("error protocol error");
             handleCommand("begin", "ok", serverReader, serverWriter);
             handleCommand("to " + String.join(",", errorMail.getTo()), "ok " + errorMail.getTo().size(), serverReader, serverWriter);
             handleCommand("subject " + errorMail.getSubject(), "ok", serverReader, serverWriter);

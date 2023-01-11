@@ -58,7 +58,7 @@ public class MessageClient implements IMessageClient, Runnable {
 
     private boolean beginDMAP() {
         String[] reply = this.dmapSocketHandler.receiveMessages();
-        if (reply.length < 1 || !reply[0].equals("ok DMAP")) {
+        if (reply.length < 1 || !reply[0].equals("ok DMAP2.0")) {
             this.shell.err().println("DMAP error");
             return false;
         }
