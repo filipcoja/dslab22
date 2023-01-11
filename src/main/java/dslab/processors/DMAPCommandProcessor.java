@@ -11,11 +11,9 @@ public class DMAPCommandProcessor extends CommandProcessor {
     private final MailboxServerDatabase mailboxServerDatabase;
 
     private boolean loggedIn = false;
-    private HandshakeStatus handshakeStatus = HandshakeStatus.NOT_STARTED;
     private String usernameLoggedIn = "";
 
     private final PrivateKeyUtil privateKeyUtil;
-    private AESUtil aesUtil;
     private final IntegrityUtil integrity = new IntegrityUtil();
 
     public DMAPCommandProcessor(MailboxServerDatabase mailboxServerDatabase) {
@@ -84,6 +82,7 @@ public class DMAPCommandProcessor extends CommandProcessor {
         String iv = commandParts[3];
         aesUtil = new AESUtil(secretKey, iv);
         send(aesUtil.encryptBase64("ok " + clientChallenge)); // client challenge hier decrypted angeben
+        handshakeStatus = HandshakeStatus.AWAITING_OK;
         return false;
     }
 
@@ -111,13 +110,16 @@ public class DMAPCommandProcessor extends CommandProcessor {
         }
         var mails = mailboxServerDatabase.getUserMails(usernameLoggedIn);
         if (mails.keySet().size() == 0) {
-            writer.println("no messages");
+            writer.println(handshakeStatus == HandshakeStatus.FINISHED ? this.aesUtil.encryptBase64("no messages") : "no messages");
         } else {
             for (int id : mails.keySet()) {
                 Mail mail = mails.get(id);
-                writer.println(id + " " + mail.getFrom() + " " + mail.getSubject());
+                String mailString = id + " " + mail.getFrom() + " " + mail.getSubject();
+                if (handshakeStatus == HandshakeStatus.FINISHED) mailString = this.aesUtil.encryptBase64(mailString);
+                writer.println(mailString);
             }
         }
+        writer.println(handshakeStatus == HandshakeStatus.FINISHED ? this.aesUtil.encryptBase64("ok") : "ok");
 
         writer.flush();
     }
@@ -135,11 +137,12 @@ public class DMAPCommandProcessor extends CommandProcessor {
             int id = Integer.parseInt(commandParts[1]);
             Mail mail = mailboxServerDatabase.getUserMail(usernameLoggedIn, id);
             if (mail != null) {
-                writer.println("from " + mail.getFrom());
-                writer.println("to " + String.join(",", mail.getTo()));
-                writer.println("subject " + mail.getSubject());
-                writer.println("data " + mail.getData());
-                writer.flush();
+                send("from " + mail.getFrom());
+                send("to " + String.join(",", mail.getTo()));
+                send("subject " + mail.getSubject());
+                send("data " + mail.getData());
+                send("hash " + mail.getHash());
+                send("ok");
             } else {
                 send("error mail not found");
             }

@@ -50,6 +50,10 @@ public class Mail {
         hash = integrityUtil.calculateHash(toString());
     }
 
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
     public void reset() {
         from = subject = data = null;
         to = null;

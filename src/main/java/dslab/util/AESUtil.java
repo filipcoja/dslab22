@@ -21,13 +21,13 @@ public class AESUtil {
         this.secret = secret;
         this.iv = iv;
         try {
-            SecretKey key = new SecretKeySpec(secret.getBytes(), "AES");
+            SecretKey key = new SecretKeySpec(Base64.getDecoder().decode(secret), "AES");
 
             encrypt = Cipher.getInstance("AES/CTR/NoPadding");
-            encrypt.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv.getBytes()));
+            encrypt.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(Base64.getDecoder().decode(iv)));
 
             decrypt = Cipher.getInstance("AES/CTR/NoPadding");
-            decrypt.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv.getBytes()));
+            decrypt.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(Base64.getDecoder().decode(iv)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
             System.out.println("error initializing aes cipher");
         }

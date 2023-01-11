@@ -68,6 +68,9 @@ public class TransferMailSenderThread extends Thread {
             handleCommand("subject " + mail.getSubject(), "ok", serverReader, serverWriter);
             handleCommand("from " + mail.getFrom(), "ok", serverReader, serverWriter);
             handleCommand("data " + mail.getData(), "ok", serverReader, serverWriter);
+            if (mail.getHash() != null) {
+                handleCommand("hash " + mail.getHash(), "ok", serverReader, serverWriter);
+            }
             handleCommand("send", "ok", serverReader, serverWriter);
             handleCommand("quit", "ok bye", serverReader, serverWriter);
         } catch (ConnectException e) {

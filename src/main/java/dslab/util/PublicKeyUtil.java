@@ -19,7 +19,7 @@ public class PublicKeyUtil {
         try {
             PublicKey publicKey = Keys.readPublicKey(new File(keyPath));
             cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.DECRYPT_MODE, publicKey);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
             System.out.println("error reading and initializing public key");
         }

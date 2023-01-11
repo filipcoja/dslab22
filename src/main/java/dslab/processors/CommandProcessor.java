@@ -1,11 +1,19 @@
 package dslab.processors;
 
+import dslab.model.HandshakeStatus;
+import dslab.util.AESUtil;
+
 import java.io.PrintWriter;
 
 public abstract class CommandProcessor {
     protected PrintWriter writer;
+    protected AESUtil aesUtil;
+    protected HandshakeStatus handshakeStatus = HandshakeStatus.NOT_STARTED;
 
     protected void send(String response) {
+        if (this.handshakeStatus == HandshakeStatus.FINISHED) {
+            response = this.aesUtil.encryptBase64(response);
+        }
         writer.println(response);
         writer.flush();
     }

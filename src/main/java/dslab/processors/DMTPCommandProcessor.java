@@ -43,6 +43,9 @@ public abstract class DMTPCommandProcessor extends CommandProcessor {
             case "quit":
                 sendBye();
                 return true;
+            case "hash":
+                handleHash(commandParts);
+                break;
             default:
                 send("error protocol error");
                 return true;
@@ -110,6 +113,19 @@ public abstract class DMTPCommandProcessor extends CommandProcessor {
             concatenated += " " + commandParts[i];
         }
         mail.setData(concatenated);
+        sendOk();
+    }
+
+    private void handleHash(String[] commandParts) {
+        if (!begin) {
+            send("error message not started");
+            return;
+        } else if (commandParts.length != 2) {
+            send("error malformed data command");
+            return;
+        }
+
+        mail.setHash(commandParts[1]);
         sendOk();
     }
 
