@@ -45,14 +45,13 @@ public class TransferServer implements ITransferServer, Runnable {
             ServerSocket dmtpSocket = new ServerSocket(config.getInt("tcp.port"));
             shell.out().println("Started ServerSockets");
 
-            INameserverRemote rootNameserverRemote = getRootNameserverRemote(config);
-
             // FIFO Prinzip
             BlockingQueue<Mail> mailSendingQueue = new LinkedBlockingQueue<>();
             // Start all three threads for (Listening to Connections, Worker for Mail sending queue)
             transferDMTPListenerThread = new TransferDMTPListenerThread(dmtpSocket, mailSendingQueue, config, shell);
-            transferMailSenderThread = new TransferMailSenderThread(mailSendingQueue, rootNameserverRemote);
             transferDMTPListenerThread.start();
+            INameserverRemote rootNameserverRemote = getRootNameserverRemote(config);
+            transferMailSenderThread = new TransferMailSenderThread(mailSendingQueue, rootNameserverRemote);
             transferMailSenderThread.start();
             shell.out().println("Started DMTPListener and MailSenderThread");
         } catch (RemoteException | NotBoundException e) {
@@ -70,8 +69,8 @@ public class TransferServer implements ITransferServer, Runnable {
     @Override
     @Command
     public void shutdown() {
-        transferDMTPListenerThread.shutdown();
-        transferMailSenderThread.shutdown();
+        if (transferDMTPListenerThread != null) transferDMTPListenerThread.shutdown();
+        if (transferMailSenderThread != null) transferMailSenderThread.shutdown();
         throw new StopShellException();
     }
 
