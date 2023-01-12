@@ -1,5 +1,6 @@
 package dslab.client;
 
+import at.ac.tuwien.dsg.orvell.Shell;
 import dslab.util.AESUtil;
 
 import java.io.BufferedReader;
@@ -16,11 +17,19 @@ public class ClientSocketHandler {
     private PrintWriter writer;
     private AESUtil aesUtil;
 
-    public ClientSocketHandler(Socket socket, AESUtil aesUtil) throws IOException {
-        this.socket = socket;
-        this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-        this.writer = new PrintWriter(this.socket.getOutputStream());
+    public ClientSocketHandler(String ip, int port, AESUtil aesUtil, Shell shell) {
+        try {
+            this.socket = new Socket(ip, port);
+            this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.writer = new PrintWriter(this.socket.getOutputStream());
+        } catch (IOException e) {
+            shell.err().printf("Error connecting to socket %s:%s%n", ip, port);
+        }
         this.aesUtil = aesUtil;
+    }
+
+    public boolean isConnected() {
+        return this.socket != null && this.socket.isConnected();
     }
 
     public String[] sendMessageAndReceiveMessages(String message) {

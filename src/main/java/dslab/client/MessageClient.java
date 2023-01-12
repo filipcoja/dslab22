@@ -9,10 +9,8 @@ import dslab.util.AESUtil;
 import dslab.util.Config;
 import dslab.util.PublicKeyUtil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
@@ -46,17 +44,15 @@ public class MessageClient implements IMessageClient, Runnable {
 
     @Override
     public void run() {
-        if (!this.initSockets()) {
-            return;
-        }
-        if (!this.beginDMAP()) {
-            return;
-        }
-        this.dmtpSocketHandler.receiveMessages();
+        this.beginDMAP();
         this.shell.run();
     }
 
     private boolean beginDMAP() {
+        this.dmapSocketHandler = new ClientSocketHandler(this.config.getString("mailbox.host"), this.config.getInt("mailbox.port"), this.aesUtil, this.shell);
+        if (!dmapSocketHandler.isConnected()) {
+            return false;
+        }
         String[] reply = this.dmapSocketHandler.receiveMessages();
         if (reply.length < 1 || !reply[0].equals("ok DMAP2.0")) {
             this.shell.err().println("DMAP error");
@@ -88,25 +84,13 @@ public class MessageClient implements IMessageClient, Runnable {
         return true;
     }
 
-    private boolean initSockets() {
-        try {
-            this.dmtpSocketHandler = new ClientSocketHandler(new Socket(this.config.getString("transfer.host"), this.config.getInt("transfer.port")), this.aesUtil);
-        } catch (IOException e) {
-            this.shell.err().printf("Error: Could not connect to DMTP Server %s:%s.%n", this.config.getString("transfer.host"), this.config.getInt("transfer.port"));
-            return false;
-        }
-        try {
-            this.dmapSocketHandler = new ClientSocketHandler(new Socket(this.config.getString("mailbox.host"), this.config.getInt("mailbox.port")), this.aesUtil);
-        } catch (IOException e) {
-            this.shell.err().printf("Error: Could not connect to DMAP Server %s:%s.%n", this.config.getString("mailbox.host"), this.config.getInt("mailbox.port"));
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @Command
     public void inbox() {
+        if (!dmapServerAvailable()) {
+            this.shell.out().println("DMAP server is currently not available");
+            return;
+        }
         String[] list = this.dmapSocketHandler.sendEncryptedMessageAndReceiveEncryptedMessages("list");
         StringBuilder stringBuilder = new StringBuilder();
         if (list.length < 1 || list[0].equals("no messages")) {
@@ -128,6 +112,10 @@ public class MessageClient implements IMessageClient, Runnable {
     @Override
     @Command
     public void delete(String id) {
+        if (!dmapServerAvailable()) {
+            this.shell.out().println("DMAP server is currently not available");
+            return;
+        }
         if (id == null || id.trim().length() == 0) {
             this.shell.err().println("error no message-id given");
             return;
@@ -144,6 +132,10 @@ public class MessageClient implements IMessageClient, Runnable {
     @Override
     @Command
     public void verify(String id) {
+        if (!dmapServerAvailable()) {
+            this.shell.out().println("DMAP server is currently not available");
+            return;
+        }
         if (id == null || id.trim().length() == 0) {
             this.shell.err().println("error no message-id given");
             return;
@@ -170,9 +162,18 @@ public class MessageClient implements IMessageClient, Runnable {
         }
     }
 
+    private boolean dmapServerAvailable() {
+        return this.dmapSocketHandler.isConnected() || beginDMAP();
+    }
+
     @Override
     @Command
     public void msg(String to, String subject, String data) {
+        this.dmtpSocketHandler = new ClientSocketHandler(this.config.getString("transfer.host"), this.config.getInt("transfer.port"), this.aesUtil, this.shell);
+        if (!this.dmtpSocketHandler.isConnected()) {
+            this.shell.out().println("Cannot send messages at the moment, try again later.");
+            return;
+        }
         if (
             to == null || to.trim().length() == 0
             || subject == null || subject.trim().length() == 0
@@ -202,6 +203,7 @@ public class MessageClient implements IMessageClient, Runnable {
         } else {
             this.shell.out().println("Error sending message");
         }
+        this.dmtpSocketHandler.close();
     }
 
     private boolean communicate(String message) {
