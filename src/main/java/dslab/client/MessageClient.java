@@ -215,8 +215,10 @@ public class MessageClient implements IMessageClient, Runnable {
     @Command
     public void shutdown() {
         this.shell.out().println("Shutting down client ...");
-        this.dmtpSocketHandler.close();
-        this.dmapSocketHandler.close();
+        if (dmapServerAvailable()) {
+            System.out.println(Arrays.toString(this.dmapSocketHandler.sendEncryptedMessageAndReceiveEncryptedMessages("logout")));
+            this.dmapSocketHandler.close();
+        }
         throw new StopShellException();
     }
 

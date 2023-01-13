@@ -29,7 +29,7 @@ public class ClientSocketHandler {
     }
 
     public boolean isConnected() {
-        return this.socket != null && this.socket.isConnected();
+        return this.socket != null && this.socket.isConnected() && !this.socket.isClosed();
     }
 
     public String[] sendMessageAndReceiveMessages(String message) {
